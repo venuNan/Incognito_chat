@@ -35,6 +35,7 @@
             outline: none;
         }
 
+
         body form input[type="submit"]{
             width: 100%;
             background-color: rgb(108, 22, 189);
@@ -44,7 +45,7 @@
         body form input[type="submit"]:hover{
             background-color: rgb(73, 0, 141);
         }
-        
+
         body h1{
             font-family: cursive;
             font-size: 50px;
@@ -53,6 +54,24 @@
         body form a{
             text-decoration: none;
             font-size: 12px;
+        }
+
+        body h5{
+            margin: 20px;
+            font-size: 20px;
+            color: aquamarine;
+            display: none;
+        }
+        
+        @media (max-width:400px) {
+            body{
+                margin-top: 70px;
+            }
+            body form input{
+                width: 240px;
+                height: 40px;
+                
+            }
         }
         
     </style>
@@ -65,5 +84,6 @@
         <input type="submit" value="Login to Room" id="login"><br>
         <a href="create_room.html">Create Room</a>
     </form>
+    <h5>Room not Found</h5>
 </body>
 </html>
