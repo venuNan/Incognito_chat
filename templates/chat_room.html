@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ignitico | Chat Room</title>
+    <link rel="stylesheet" href="/static/css/chat_room.css">
+</head>
+<body>
+    <header>
+        <div class="icon">
+            <img src="/static/images/chat_icon.png" alt="" height="25px" width="30px">
+        </div>
+        <div class="room_name">
+            venureddy's room
+        </div>
+    </header>
+    <main>
+        <section class="main">
+            <section class="display">
+                <div class="recv">
+                    <div class="text">
+                        hello
+                    </div>
+                </div>
+                <div class="send">
+                    <div class="text">
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dicta exercitationem dolorem libero modi, sed vel esse facere voluptas voluptatibus cumque incidunt sapiente nisi impedit tempore quae eveniet. Rem, fugiat illo.
+                    </div>
+                </div>
+            </section>
+            <hr>
+            <section class="input">
+                <form action="/send">
+                    <input type="text" id ="message" placeholder="Type Something" name="message">
+                    <input type="submit" value="Send">
+                </form>
+            </section>
+        </section>
+    </main>
+</body>
+</html>

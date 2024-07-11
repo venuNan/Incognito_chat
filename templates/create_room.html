@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incognito Chat | Create Room</title>
+    <link rel="stylesheet" href="/static/css/create_room.css">
+</head>
+<body>
+    <h1>Incognito chat</h1>
+    <h5 id="room_created" style="color: green; font-size:larger;">Room created successfully</h5>
+    <form>
+        <!-- room name input -->
+        <input type="text" id="room_name" placeholder="Enter room name" autocomplete="off" autofocus required><br>
+        <!-- error message to show when user entering the room name -->
+        <h6 id = "roomname_length">. username length should be grater than 6</h6><br>
+
+        <!-- password input -->
+        <input type="password" id="password" placeholder="Room_password" required ><br>
+
+        <!-- error messages to show to the user when they are entering the password -->
+        <h6 id="password_length">. password length must be grater than 6</h6>
+        <h6 id="numbers">. password must contain numbers</h6>
+        <h6 id="alphabets">. password must contain Alphabets</h6>
+        <h6 id="symbols">. password must contain special letters "@_"</h6>
+        <h6 id="no_symbols">. password do not caontain spaces and other<br>&nbsp&nbsp;than these "@_" symbols</h6><br>
+
+        <!-- room capacity input -->
+        <input type="number" id="capacity" max="10" placeholder="number of persons" required><br><br>
+
+        <!-- submit button -->
+        <input type="submit" value="Create Room" id="submit_button" disabled ><br>
+
+        <!-- link takes to the login page for the room -->
+        <div><a href="/to_login_to_room_page">Login to Room</a></div>
+    </form>
+
+    <!-- to show the user that the room name entered already exists -->
+    <div id="exist_message">Room already exists</div>
+    
+    <script src="/static/js/create_room.js"></script>
+</body>
+</html>
