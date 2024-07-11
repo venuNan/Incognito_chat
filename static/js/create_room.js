@@ -90,7 +90,10 @@ document.getElementById("submit_button").addEventListener("click", function() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data);
+        if(data['status']=="room_created"){
+            document.getElementById("room_created").style.display = "block";
+        }
+        
     })
     .catch(error => {
         console.error('Error:', error);

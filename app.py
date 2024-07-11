@@ -35,12 +35,16 @@ def login_to_room_page():
 @app.route("/create_room", methods=["POST"])
 def create_room():
     data = request.json
-    exist_room = Room_data.query.filter_by(room_name=data['room_name'])
-    print(exist_room)
-    if exist_room > 0:
-        return jsonify({'status':'room_exists'})
-    print(data)
-    return jsonify(data)
+    exist_room = Room_data.query.filter_by(room_name=data['room_name']).all()
+    if len(exist_room)>0:
+        print("room_exists")
+        return jsonify({'status':'room_exist'})
+    print("room created")
+    room = Room_data(room_name=data["room_name"], password=data['password'], max_capacity=data['capacity'], cur_capacity=1)
+    db.session.add(room)
+    db.session.commit()
+
+    return jsonify({'status':'room_created'})
     
 # to login into an existing room
 @app.route("/login_to_room")
