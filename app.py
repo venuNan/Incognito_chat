@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request,jsonify
+from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import SQLAlchemyError
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:VenuNan5142M_@localhost/user"
@@ -7,51 +8,63 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-class Room_data(db.Model):
-    room_name = db.Column(db.String(100),primary_key=True)
-    password = db.Column(db.String(100),nullable=False)
-    max_capacity = db.Column(db.Integer,nullable= False)
-    cur_capacity = db.Column(db.Integer,nullable=False,default=1)
-
-    def __repr__(self) -> str:
-        return f"<Room_data(room_name={self.room_name}, password={self.password}, max_capacity={self.max_capacity}, cur_capacity={self.cur_capacity})>"
+class RoomData(db.Model):
+    
+    room_name = db.Column(db.String(100), primary_key=True)
+    password = db.Column(db.String(100), nullable=False)
+    max_capacity = db.Column(db.Integer, nullable=False)
+    cur_capacity = db.Column(db.Integer, nullable=False, default=1)
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
-# to render the create room page 
-@app.route("/to_create_room_page")
-def create_room_page():
-    return render_template("create_room.html")
+@app.route("/create_room", methods=["POST", "GET"])
 
-#  to render the login to room page
-@app.route("/to_login_to_room_page")
-def login_to_room_page():
-    return render_template("login_to_room.html")
-
-
-# to create a room based on the details given by the user
-@app.route("/create_room", methods=["POST"])
 def create_room():
-    data = request.json
-    exist_room = Room_data.query.filter_by(room_name=data['room_name']).all()
-    if len(exist_room)>0:
-        print("room_exists")
-        return jsonify({'status':'room_exist'})
-    print("room created")
-    room = Room_data(room_name=data["room_name"], password=data['password'], max_capacity=data['capacity'], cur_capacity=1)
-    db.session.add(room)
-    db.session.commit()
+    if request.method == "POST":
+        data = request.json
+        if not data:
+            return jsonify({'status': 'error', 'message': 'No data provided'}), 400
 
-    return jsonify({'status':'room_created'})
-    
-# to login into an existing room
+        room_name = data.get('room_name')
+        password = data.get('password')
+        capacity = data.get('capacity')
+
+        if not room_name or not password or not capacity:
+            return jsonify({'status': 'error', 'message': 'Missing required fields'}), 400
+
+        try:
+            exist_room = db.session.execute("select * from user.room_data where room_name= :room_name",{'room_name':room_name})
+            if exist_room:
+                print("room_exist")
+                return jsonify({'status': 'room_exist'})
+
+            room = RoomData(room_name=room_name, password=password, max_capacity=capacity, cur_capacity=1)
+            db.session.add(room)
+            db.session.commit()
+
+            print("room_created")
+            return jsonify({'status': 'room_created'})
+        
+        except SQLAlchemyError as e:
+            print(e)
+            db.session.rollback()
+            return jsonify({'status': 'error', 'message': str(e)}), 500
+        
+        except Exception as e:
+            print(e)
+            return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
+        
+    else:
+        print("heloo world")
+        return render_template("create_room.html")
+
 @app.route("/login_to_room")
 def login_to_room():
     return render_template("login_to_room.html")
 
 if __name__ == "__main__":
-    app.run()
     with app.app_context():
         db.create_all()
+    app.run()

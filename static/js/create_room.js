@@ -7,7 +7,8 @@ function roomNameValidates() {
     if (roomName.length < 6) {
         document.getElementById("roomname_length").style.display = "block";
         isRoomNameValid = false;
-    } else {
+    } 
+    else {
         document.getElementById("roomname_length").style.display = "none";
         isRoomNameValid = true;
     }
@@ -21,7 +22,8 @@ function passwordValidates() {
     if (password.length < 6) {
         document.getElementById("password_length").style.display = "block";
         isValid = false;
-    } else {
+    } 
+    else {
         document.getElementById("password_length").style.display = "none";
     }
 
@@ -29,7 +31,8 @@ function passwordValidates() {
     if (!hasNumber) {
         document.getElementById("numbers").style.display = "block";
         isValid = false;
-    } else {
+    } 
+    else {
         document.getElementById("numbers").style.display = "none";
     }
 
@@ -37,7 +40,8 @@ function passwordValidates() {
     if (!hasAlphabet) {
         document.getElementById("alphabets").style.display = "block";
         isValid = false;
-    } else {
+    } 
+    else {
         document.getElementById("alphabets").style.display = "none";
     }
 
@@ -45,7 +49,8 @@ function passwordValidates() {
     if (!hasSymbol) {
         document.getElementById("symbols").style.display = "block";
         isValid = false;
-    } else {
+    } 
+    else {
         document.getElementById("symbols").style.display = "none";
     }
 
@@ -53,7 +58,8 @@ function passwordValidates() {
     if (invalidSymbols) {
         document.getElementById("no_symbols").style.display = "block";
         isValid = false;
-    } else {
+    } 
+    else {
         document.getElementById("no_symbols").style.display = "none";
     }
     isPasswordValid = isValid;
@@ -64,15 +70,16 @@ function toggleSubmitButton() {
     const submitButton = document.getElementById("submit_button");
     if (isRoomNameValid && isPasswordValid) {
         submitButton.disabled = false;
-    } else {
+        submitButton.style.cursor = "pointer";
+    } 
+    else {
         submitButton.disabled = true;
     }
 }
-
 document.getElementById("room_name").addEventListener("input", roomNameValidates);
 document.getElementById("password").addEventListener("input", passwordValidates);
 
-document.getElementById("submit_button").addEventListener("click", function() {
+document.getElementById("submit_button").addEventListener("submit", ()=> {
     const room_name_value = document.getElementById("room_name").value;
     const password_value = document.getElementById("password").value;
     const capacity_value = document.getElementById("capacity").value;
@@ -90,10 +97,15 @@ document.getElementById("submit_button").addEventListener("click", function() {
     })
     .then(response => response.json())
     .then(data => {
-        if(data['status']=="room_created"){
+        if (data['status'].includes("room_exist")) {
+            document.getElementById("exist_message").style.display = "block";
+        } 
+        else if (data['status'].includes("room_created")){
             document.getElementById("room_created").style.display = "block";
         }
-        
+        else if (data['status'].includes("error")){
+            document.getElementById("error-message").textContent = data['message'];
+        }
     })
     .catch(error => {
         console.error('Error:', error);

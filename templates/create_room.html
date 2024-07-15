@@ -8,6 +8,7 @@
 </head>
 <body>
     <h1>Incognito chat</h1>
+    <h5 id="error-message"></h5>
     <h5 id="room_created" style="color: green; font-size:larger;">Room created successfully</h5>
     <form>
         <!-- room name input -->
@@ -16,7 +17,7 @@
         <h6 id = "roomname_length">. username length should be grater than 6</h6><br>
 
         <!-- password input -->
-        <input type="password" id="password" placeholder="Room_password" required ><br>
+        <input type="password" id="password" placeholder="Room_password" autocomplete="off" ><br>
 
         <!-- error messages to show to the user when they are entering the password -->
         <h6 id="password_length">. password length must be grater than 6</h6>
@@ -29,10 +30,10 @@
         <input type="number" id="capacity" max="10" placeholder="number of persons" required><br><br>
 
         <!-- submit button -->
-        <input type="submit" value="Create Room" id="submit_button" disabled ><br>
+        <input type="submit" id="submit_button" disabled ><br>
 
         <!-- link takes to the login page for the room -->
-        <div><a href="/to_login_to_room_page">Login to Room</a></div>
+        <div><a href="/login_to_room">Login to Room</a></div>
     </form>
 
     <!-- to show the user that the room name entered already exists -->
