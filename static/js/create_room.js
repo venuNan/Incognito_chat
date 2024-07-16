@@ -79,7 +79,7 @@ function toggleSubmitButton() {
 document.getElementById("room_name").addEventListener("input", roomNameValidates);
 document.getElementById("password").addEventListener("input", passwordValidates);
 
-document.getElementById("submit_button").addEventListener("submit", ()=> {
+document.getElementById("submit_button").addEventListener("click", (event)=> {
     const room_name_value = document.getElementById("room_name").value;
     const password_value = document.getElementById("password").value;
     const capacity_value = document.getElementById("capacity").value;
