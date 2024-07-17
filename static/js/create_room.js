@@ -80,9 +80,26 @@ document.getElementById("room_name").addEventListener("input", roomNameValidates
 document.getElementById("password").addEventListener("input", passwordValidates);
 
 document.getElementById("submit_button").addEventListener("click", (event)=> {
-    const room_name_value = document.getElementById("room_name").value;
-    const password_value = document.getElementById("password").value;
-    const capacity_value = document.getElementById("capacity").value;
+    event.preventDefault()
+    const room_name = document.getElementById("room_name");
+    const password = document.getElementById("password");
+    const capacity = document.getElementById("capacity");
+
+    const room_name_value =  room_name.value;
+    const password_value = password.value;
+    const capacity_value = capacity.value;
+
+    room_name.textContent = "";
+    password.textContent = "";
+    capacity.textContent = "";
+
+    const room_exist = document.getElementById("exist_message")
+    room_exist.style.display = "none";
+    const room_created = document.getElementById("room_created")
+    room_created.style.display = "none";
+    const error_message = document.getElementById("exist_message")
+    error_message.style.display = "none";
+
 
     fetch("/create_room", {
         method: 'POST',
@@ -98,13 +115,13 @@ document.getElementById("submit_button").addEventListener("click", (event)=> {
     .then(response => response.json())
     .then(data => {
         if (data['status'].includes("room_exist")) {
-            document.getElementById("exist_message").style.display = "block";
+            room_exist.style.display = "block";
         } 
         else if (data['status'].includes("room_created")){
-            document.getElementById("room_created").style.display = "block";
+            room_created.style.display = "block";
         }
         else if (data['status'].includes("error")){
-            document.getElementById("error-message").textContent = data['message'];
+            error_message.textContent = data['message'];
         }
     })
     .catch(error => {
