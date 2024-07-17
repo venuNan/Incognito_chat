@@ -1,7 +1,18 @@
 let isRoomNameValid = false;
 let isPasswordValid = false;
 
+const room_exist = document.getElementById("exist_message");
+const room_created = document.getElementById("room_created");
+const error_message = document.getElementById("error_message");
+
+function clear_messages(){
+    room_exist.style.display = "none";
+    room_created.style.display = "none";
+    error_message.style.display = "none";
+}
+
 function roomNameValidates() {
+    clear_messages();
     let roomName = document.getElementById("room_name").value;
     
     if (roomName.length < 6) {
@@ -16,6 +27,7 @@ function roomNameValidates() {
 }
 
 function passwordValidates() {
+    clear_messages();
     let password = document.getElementById("password").value;
     let isValid = true;
 
@@ -89,17 +101,10 @@ document.getElementById("submit_button").addEventListener("click", (event)=> {
     const password_value = password.value;
     const capacity_value = capacity.value;
 
-    room_name.textContent = "";
-    password.textContent = "";
-    capacity.textContent = "";
-
-    const room_exist = document.getElementById("exist_message")
-    room_exist.style.display = "none";
-    const room_created = document.getElementById("room_created")
-    room_created.style.display = "none";
-    const error_message = document.getElementById("exist_message")
-    error_message.style.display = "none";
-
+    room_name.value = "";
+    password.value = "";
+    capacity.value = "";
+    clear_messages();
 
     fetch("/create_room", {
         method: 'POST',
@@ -121,6 +126,7 @@ document.getElementById("submit_button").addEventListener("click", (event)=> {
             room_created.style.display = "block";
         }
         else if (data['status'].includes("error")){
+            error_message.style.display = "block";
             error_message.textContent = data['message'];
         }
     })

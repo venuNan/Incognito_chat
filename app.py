@@ -13,11 +13,11 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 class RoomData(db.Model):
-    
     room_name = db.Column(db.String(100), primary_key=True)
     password = db.Column(db.String(100), nullable=False)
     max_capacity = db.Column(db.Integer, nullable=False)
     cur_capacity = db.Column(db.Integer, nullable=False, default=1)
+
 
 @app.route("/")
 def home():
@@ -27,7 +27,6 @@ def home():
 def create_room():
     if request.method == "POST":
         data = request.json
-        print(data)
         if not data:
             return jsonify({'status': 'error', 'message': 'No data provided'}), 400
 
@@ -35,20 +34,18 @@ def create_room():
         password = data.get('password')
         capacity = data.get('capacity')
 
-        if not room_name or not password or not capacity:
+        if room_name == "" or password == " " or capacity == "":
             return jsonify({'status': 'error', 'message': 'Missing required fields'}), 400
 
         try:
             exist_room = db.session.execute(text("select * from user.room_data where room_name= :room_name"),{'room_name':room_name}).fetchall()
             if exist_room:
-                print("room_exist")
                 return jsonify({'status': 'room_exist'})
 
             room = RoomData(room_name=room_name, password=password, max_capacity=capacity, cur_capacity=1)
             db.session.add(room)
             db.session.commit()
 
-            print("room_created")
             return jsonify({'status': 'room_created'})
         
         except SQLAlchemyError as e:
@@ -64,8 +61,31 @@ def create_room():
 
 @app.route("/login_to_room",methods=["POST", "GET"])
 def login_to_room():
+    print(request.method)
     if request.method == "POST":
-        pass
+        data = request.json
+        print(data)
+        if not data:
+            return jsonify({'status': 'error', 'message': 'No data provided'}), 400
+
+        room_name = data.get('room_name')
+        password = data.get('password')
+
+        if room_name == "" or password == " ":
+            print("missing required fields")
+            return jsonify({'status': 'error', 'message': 'Missing required fields'}), 400
+
+        try:
+            user_exists = db.session.execute(text("select * from user.room_data where room_name= :room_name"),{'room_name':room_name}).fetchall()
+            print(user_exists)
+            if user_exists:
+                return render_template("chat_room.html")
+
+            else:
+                return jsonify({'status': 'error', 'mesage':'Room does not exist'})
+        
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
     else:
         return render_template("login_to_room.html")
 

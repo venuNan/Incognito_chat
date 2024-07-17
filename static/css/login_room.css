@@ -49,13 +49,6 @@ body form a{
     font-size: 12px;
 }
 
-body h5{
-    margin: 20px;
-    font-size: 20px;
-    color: aquamarine;
-    display: none;
-}
-
 @media (max-width:400px) {
     body{
         margin-top: 70px;
@@ -65,4 +58,9 @@ body h5{
         height: 40px;
         
     }
+}
+
+#error_message {
+    margin: 0%;
+    display: none;
 }

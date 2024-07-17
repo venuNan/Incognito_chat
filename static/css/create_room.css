@@ -58,8 +58,9 @@ body form div, body form div a{
 }
 
 body form #roomname_length, body form #numbers,body form #alphabets,body form #symbols,
-body form #password_length, body form #no_symbols,body #exist_message, body #room_created{
+body form #password_length, body form #no_symbols,body #exist_message, body #room_created,body #error_message{
     display: none;
+    margin: 0%;
 }
 
 h6{

@@ -7,15 +7,15 @@
     <link rel="stylesheet" href="/static/css/login_room.css">
 </head>
 <body>
+
     <h1>Incognito chat</h1>
+    <h5 id="error_message"></h5>
     <form>
         <input type="text" placeholder="Enter room name" autocomplete="off" autofocus required><br><br>
-        <input type="password" placeholder="Room password" required><br><br>
-        <h5>Room not Found</h5>
-        <input type="submit" value="Login to Room" id="login_to_room"><br>
+        <input type="password" placeholder="Room password" autocomplete="off" required><br><br>
+        <input type="submit"  id="submit_button"><br>
         <a href="/create_room">Create Room</a>
     </form>
-    <h5>Room not Found</h5>
     <script src="/static/js/login_to_room.js"></script>
     
 </body>
