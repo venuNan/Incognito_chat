@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect,url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
@@ -76,11 +76,10 @@ def login_to_room():
             return jsonify({'status': 'error', 'message': 'Missing required fields'}), 400
 
         try:
-            user_exists = db.session.execute(text("select * from user.room_data where room_name= :room_name"),{'room_name':room_name}).fetchall()
+            user_exists = db.session.execute(text("select * from user.room_data where room_name= :room_name and password= :password"),{'room_name':room_name,"password":password}).fetchall()
             print(user_exists)
             if user_exists:
-                return render_template("chat_room.html")
-
+                return jsonify({"status":"success", "room_name":user_exists[0][0],"max_capacity":user_exists[0][2],"cur_capacity":user_exists[0][3]})
             else:
                 return jsonify({'status': 'error', 'mesage':'Room does not exist'})
         
@@ -88,6 +87,18 @@ def login_to_room():
             return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
     else:
         return render_template("login_to_room.html")
+
+
+@app.route("/chat_room")
+def chat_room():
+    data = request.args
+    return render_template("chat_room.html",data=data)
+
+@app.route("/send")
+def send():
+    message = request.form.get("message")
+
+    return jsonify({"message":"helloworld"})
 
 if __name__ == "__main__":
     with app.app_context():

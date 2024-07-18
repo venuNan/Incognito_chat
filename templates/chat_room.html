@@ -12,7 +12,7 @@
             <img src="/static/images/chat_icon.png" alt="" height="25px" width="30px">
         </div>
         <div class="room_name">
-            venureddy's room
+            {{data["room_name"]}}'s room
         </div>
     </header>
     <main>
@@ -31,9 +31,9 @@
             </section>
             <hr>
             <section class="input">
-                <form action="/send">
+                <form></form>
                     <input type="text" id ="message" placeholder="Type Something" name="message">
-                    <input type="submit" value="Send">
+                    <input type="submit" id="submit_button">
                 </form>
             </section>
         </section>
