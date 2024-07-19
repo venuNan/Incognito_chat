@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ignitico | Chat Room</title>
     <link rel="stylesheet" href="/static/css/chat_room.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
 </head>
 <body>
     <header>
@@ -31,12 +32,47 @@
             </section>
             <hr>
             <section class="input">
-                <form></form>
-                    <input type="text" id ="message" placeholder="Type Something" name="message">
+                <form>
+                    <input type="text" id ="message" placeholder="Type Something" name="message" required>
                     <input type="submit" id="submit_button">
                 </form>
             </section>
         </section>
     </main>
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        var socket = io.connect("localhost:6589");
+
+        socket.on("connect",function(){
+            socket.send("user_connected");
+        });
+
+        document.getElementById("submit_button").addEventListener("click", function(event) {
+            event.preventDefault();
+            var message = document.getElementById("message").value;
+            if (message.trim()) {
+                socket.send(message);
+                document.getElementById("message").value = "";
+                const messageDisplay = document.getElementById("display");
+                var newMessage = document.createElement("div");
+                newMessage.className = "send";
+                newMessage.innerHTML = `<div class="text">${message}</div>`;
+                messageDisplay.appendChild(newMessage);
+            }
+        });
+
+        socket.on("message", function(data) {
+            console.log(data);
+            const messageDisplay = document.getElementById("display");
+            var newMessage = document.createElement("div");
+            newMessage.className = "recv";
+            newMessage.innerHTML = `<div class="text">${data}</div>`;
+            messageDisplay.appendChild(newMessage);
+        });
+
+
+    });
+</script>
 </html>

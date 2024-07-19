@@ -2,13 +2,19 @@ from flask import Flask, render_template, request, jsonify, redirect,url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
-
+from hashlib import sha256
+from flask_socketio import SocketIO,send
+from time import sleep
 
 app = Flask(__name__)
 app.config['METHOD_OVERRIDE'] = False
 
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:VenuNan5142M_@localhost/user"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET"] = "dhagumativenumadhavreddy"
+
+socket = SocketIO(app)
 
 db = SQLAlchemy(app)
 
@@ -31,7 +37,7 @@ def create_room():
             return jsonify({'status': 'error', 'message': 'No data provided'}), 400
 
         room_name = data.get('room_name')
-        password = data.get('password')
+        password = sha256((data.get('password')).encode()).hexdigest()
         capacity = data.get('capacity')
 
         if room_name == "" or password == " " or capacity == "":
@@ -69,7 +75,7 @@ def login_to_room():
             return jsonify({'status': 'error', 'message': 'No data provided'}), 400
 
         room_name = data.get('room_name')
-        password = data.get('password')
+        password = sha256((data.get('password')).encode()).hexdigest()
 
         if room_name == "" or password == " ":
             print("missing required fields")
@@ -94,13 +100,22 @@ def chat_room():
     data = request.args
     return render_template("chat_room.html",data=data)
 
-@app.route("/send")
-def send():
-    message = request.form.get("message")
+# @app.route("/send")
+# def send():
+#     message = request.form.get("message")
+#     return jsonify({"message":"helloworld"})
 
-    return jsonify({"message":"helloworld"})
+def func():
+    while True:
+        sleep(1)
+        socket.emit("hello world")
+
+@socket.on("message")
+def send_to_frontend(msg):
+    if msg == "user_connected":
+            print(msg)
+            socket.start_background_task(func)
+
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    app.run()
+    socket.run(app,host="localhost",port=6589)
