@@ -10,5 +10,8 @@
 ## Prerequisites
     - Python 3.x
     - Flask
-### Navigate
+## Navigate
     cd project_location
+
+## Dependencies installation
+    pip install -r requirements.txt
