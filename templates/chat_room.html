@@ -18,7 +18,7 @@
             </div>
         </section>
         <section class="leave_room">
-            <button>Leave Room</button>
+            <button id="leave_room_button">Leave Room</button>
         </section>
     </header>
     <main>
@@ -47,37 +47,55 @@
 </body>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-
         var socket = io.connect("localhost:6589");
 
-        socket.on("connect",function(){
-            socket.send("user_connected");
+        socket.on("connect", function() {
+            socket.emit("join", {
+                room: "{{ data['room_name'] }}"
+            });
         });
+
+        function appendMessage(message,sender){
+            const messageDisplay = document.getElementsByClassName("display")[0];
+                var newMessage = document.createElement("div");
+                newMessage.className = sender == "me" ? "send" : "recv";
+                newMessage.innerHTML = `<div class="text">${message}</div>`;
+                messageDisplay.appendChild(newMessage);
+        }
 
         document.getElementById("submit_button").addEventListener("click", function(event) {
             event.preventDefault();
-            var message = document.getElementById("message").value;
-            if (message.trim()) {
-                socket.send(message);
+            var msg = document.getElementById("message").value;
+            if (msg.trim()) {
+                socket.emit("message", {
+                    room: "{{ data['room_name'] }}",
+                    message: msg
+                });
+                console.log("sent a message");
+                appendMessage(msg,"me")
                 document.getElementById("message").value = "";
-                const messageDisplay = document.getElementsByClassName("display")[0];
-                var newMessage = document.createElement("div");
-                newMessage.className = "send";
-                newMessage.innerHTML = `<div class="text">${message}</div>`;
-                messageDisplay.appendChild(newMessage);
             }
         });
 
         socket.on("message", function(data) {
-            console.log(data);
-            const messageDisplay = document.getElementsByClassName("display")[0];
-            var newMessage = document.createElement("div");
-            newMessage.className = "recv";
-            newMessage.innerHTML = `<div class="text">${data}</div>`;
-            messageDisplay.appendChild(newMessage);
+            console.log("received message");
+            appendMessage(data,"other")
         });
 
+        document.getElementById("leave_room_button").addEventListener("click",function(){
+            socket.emit("leave", {
+                room: "{{ data['room_name'] }}"
+            });
+            window.location.href = "/";
+        });
 
+        window.addEventListener("beforeunload", function() {
+            socket.emit("leave", {
+                room: roomName,
+                username: "{{ data['username'] }}"
+            });
+        });
     });
+
 </script>
 </html>

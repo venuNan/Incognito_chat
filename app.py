@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
 from hashlib import sha256
-from flask_socketio import SocketIO,send
+from flask_socketio import SocketIO,join_room,leave_room,send
 from time import sleep
 from dotenv import load_dotenv
 import os
@@ -17,7 +17,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET"] = os.environ.get("SECRET_KEY")
 
-socket = SocketIO(app)
+socket = SocketIO(app,cors_allowed_origins="*")
 
 db = SQLAlchemy(app)
 
@@ -117,19 +117,29 @@ def chat_room():
     data = request.args
     return render_template("chat_room.html",data=data)
 
-# @app.route("/send")
-# def send():
-#     message = request.form.get("message")
-#     return jsonify({"message":"helloworld"})
+@socket.on('join')
+def handle_join(data):
+    room = data['room']
+    join_room(room)
+    send(f'someone has entered the room.', to=room)
 
-
+@socket.on('leave')
+def handle_leave(data):
+    room = data['room']
+    leave_room(room)
+    try:
+        db.session.execute(text("UPDATE user.room_data SET cur_capacity = cur_capacity + 1 WHERE room_name = :room_name"), {'room_name': room})
+        db.session.commit()
+        send(f'someone has left the room.', to=room)
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    
 @socket.on("message")
-def send_to_frontend(msg):
-    if msg == "user_connected":
-            print(msg)
-            send("one person connected")
-    else:
-        send("hi")
+def handle_message(data):
+    room = data['room']
+    message = data['message']
+    send(message, to=room)
 
 if __name__ == "__main__":
     socket.run(app,host="localhost",port=6589)
