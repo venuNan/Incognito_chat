@@ -18,10 +18,10 @@
     python -m venv folder_name
 
     for command prompt in windows :-
-        cd folder_name/Scripts/activate.bat 
+        cd folder_name\Scripts\activate.bat 
     
     for power shell in windows :-
-        cd .\folder_name/Scripts/activate.ps1 
+        cd .\folder_name\Scripts\activate.ps1 
 
 ## Dependencies installation
     pip install -r requirements.txt
