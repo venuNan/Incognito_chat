@@ -5,14 +5,17 @@ from sqlalchemy import text
 from hashlib import sha256
 from flask_socketio import SocketIO,send
 from time import sleep
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 app.config['METHOD_OVERRIDE'] = False
 
+load_dotenv()
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:VenuNan5142M_@localhost/user"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SECRET"] = "dhagumativenumadhavreddy"
+app.config["SECRET"] = os.environ.get("SECRET_KEY")
 
 socket = SocketIO(app)
 
@@ -105,17 +108,14 @@ def chat_room():
 #     message = request.form.get("message")
 #     return jsonify({"message":"helloworld"})
 
-def func():
-    while True:
-        sleep(1)
-        socket.emit("hello world")
 
 @socket.on("message")
 def send_to_frontend(msg):
     if msg == "user_connected":
             print(msg)
-            socket.start_background_task(func)
-
+            send("one person connected")
+    else:
+        send("hi")
 
 if __name__ == "__main__":
     socket.run(app,host="localhost",port=6589)

@@ -3,6 +3,7 @@ html,body{
     width: 100%;
     height: 100%;
     font-family:sans-serif;
+    background: linear-gradient(to right,rgba(251, 12, 12, 0.167),rgba(0, 0, 255, 0.167));
 
 }
 header{
@@ -25,8 +26,6 @@ main{
     width: 100%;
     height: calc(100% - 50px);
     box-sizing: border-box;
-    background: linear-gradient(to right,rgba(251, 12, 12, 0.167),rgba(0, 0, 255, 0.167));
-
 }
 main .main{
     height: 100%;
@@ -43,8 +42,9 @@ main .main .display{
     display: flex;
     flex-direction: column;
     gap: 8px;
-    overflow-y: scroll;
+    overflow-y: auto;
     margin-bottom: 10px;
+    
 }
 
 main .main .display::-webkit-scrollbar{

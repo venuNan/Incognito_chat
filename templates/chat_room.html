@@ -55,7 +55,7 @@
             if (message.trim()) {
                 socket.send(message);
                 document.getElementById("message").value = "";
-                const messageDisplay = document.getElementById("display");
+                const messageDisplay = document.getElementsByClassName("display")[0];
                 var newMessage = document.createElement("div");
                 newMessage.className = "send";
                 newMessage.innerHTML = `<div class="text">${message}</div>`;
@@ -65,7 +65,7 @@
 
         socket.on("message", function(data) {
             console.log(data);
-            const messageDisplay = document.getElementById("display");
+            const messageDisplay = document.getElementsByClassName("display")[0];
             var newMessage = document.createElement("div");
             newMessage.className = "recv";
             newMessage.innerHTML = `<div class="text">${data}</div>`;
