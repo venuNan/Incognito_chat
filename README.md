@@ -10,3 +10,5 @@
 ## Prerequisites
     - Python 3.x
     - Flask
+### Navigate
+    cd project_location
