@@ -13,5 +13,10 @@
 ## Navigate
     cd project_location
 
+## Acticvation of virtual environments to run the project
+    python -m venv venv
+    source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+
 ## Dependencies installation
     pip install -r requirements.txt
