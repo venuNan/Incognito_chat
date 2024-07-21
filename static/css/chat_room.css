@@ -3,33 +3,63 @@ html,body{
     width: 100%;
     height: 100%;
     font-family:sans-serif;
-    background: linear-gradient(to right,rgba(251, 12, 12, 0.167),rgba(0, 0, 255, 0.167));
 
 }
 header{
     width: 100%;
     height: 50px;
     background: linear-gradient(to right,rgba(255, 0, 0, 0.333),rgba(0, 0, 255, 0.536));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 25px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     align-content: center;
-    gap: 20px;
     color:rgb(0, 0, 0);
     box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.141);
 }
-header img{
-    margin-top: 10px;
+
+
+header .room_data{
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+    padding-left: 20px;
 }
+
+header .room_data .room_name{
+    align-content: center;
+}
+
+header .room_data .icon{
+    align-items: center;
+    display:flex;
+}
+
+header .leave_room{
+    display: flex;
+   justify-content: flex-end; 
+   padding-right: 10px;
+   
+}
+
+header .leave_room button{
+    border: none;
+    border-radius: 4px;
+    height: 35px;
+    width: 100px;
+    cursor: pointer;
+    font-weight: bold;
+    background-color: rgba(217, 0, 255, 0.777);
+}
+
 main{
     width: 100%;
     height: calc(100% - 50px);
     box-sizing: border-box;
+    min-height: 500px;
+    background: linear-gradient(to right,rgba(251, 12, 12, 0.167),rgba(0, 0, 255, 0.167));
+
 }
 main .main{
     height: 100%;
-    min-height: 500px;
     padding: 20px;
     box-sizing: border-box;
     border-radius: 20px;

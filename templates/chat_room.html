@@ -9,12 +9,17 @@
 </head>
 <body>
     <header>
-        <div class="icon">
-            <img src="/static/images/chat_icon.png" alt="" height="25px" width="30px">
-        </div>
-        <div class="room_name">
-            {{data["room_name"]}}'s room
-        </div>
+        <section class="room_data">
+            <div class="icon">
+                <img src="/static/images/chat_icon.png" alt="" height="25px" width="30px">
+            </div>
+            <div class="room_name">
+                {{data["room_name"]}}'s room
+            </div>
+        </section>
+        <section class="leave_room">
+            <button>Leave Room</button>
+        </section>
     </header>
     <main>
         <section class="main">

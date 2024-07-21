@@ -72,6 +72,7 @@ def create_room():
 def login_to_room():
     print(request.method)
     if request.method == "POST":
+        
         data = request.json
         print(data)
         if not data:
@@ -85,15 +86,28 @@ def login_to_room():
             return jsonify({'status': 'error', 'message': 'Missing required fields'}), 400
 
         try:
-            user_exists = db.session.execute(text("select * from user.room_data where room_name= :room_name and password= :password"),{'room_name':room_name,"password":password}).fetchall()
-            print(user_exists)
+            user_exists = db.session.execute(text("SELECT * FROM user.room_data WHERE room_name = :room_name AND password = :password"), {'room_name': room_name, 'password': password}).fetchall()
+    
             if user_exists:
-                return jsonify({"status":"success", "room_name":user_exists[0][0],"max_capacity":user_exists[0][2],"cur_capacity":user_exists[0][3]})
+                if user_exists[0][2] > user_exists[0][3]:
+                    if user_exists[0][1] == password:
+                        try:
+                            db.session.execute(text("UPDATE user.room_data SET cur_capacity = cur_capacity + 1 WHERE room_name = :room_name"), {'room_name': room_name})
+                            db.session.commit()
+                            return jsonify({"status": "success", "room_name": user_exists[0][0], "max_capacity": user_exists[0][2], "cur_capacity": user_exists[0][3] + 1})
+                        except SQLAlchemyError as e:
+                            db.session.rollback()
+                            return jsonify({'status': 'error', 'message': str(e)}), 500
+                    else:
+                        return jsonify({'status': 'error', 'message': 'Incorrect password'})
+                else:
+                    return jsonify({'status': 'error', 'message': 'Room is full'})
             else:
-                return jsonify({'status': 'error', 'mesage':'Room does not exist'})
-        
+                return jsonify({'status': 'error', 'message': 'Room does not exist'})
         except Exception as e:
+            print(f"Exception occurred: {e}") 
             return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
+
     else:
         return render_template("login_to_room.html")
 
