@@ -10,13 +10,13 @@
 ## Prerequisites
     - Python 3.x
     - Flask
+    
 ## Navigate
     cd project_location
 
 ## Acticvation of virtual environments to run the project
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-
+    python -m venv folder_name
+    cd folder_name/Scripts/activate.bat 
+    
 ## Dependencies installation
     pip install -r requirements.txt
