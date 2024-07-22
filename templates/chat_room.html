@@ -24,7 +24,7 @@
     <main>
         <section class="main">
             <section class="display">
-                <div class="recv">
+                <!-- <div class="recv">
                     <div class="text">
                         hello
                     </div>
@@ -34,6 +34,16 @@
                         Lorem ipsum dolor sit amet consectetur adipisicing elit. Dicta exercitationem dolorem libero modi, sed vel esse facere voluptas voluptatibus cumque incidunt sapiente nisi impedit tempore quae eveniet. Rem, fugiat illo.
                     </div>
                 </div>
+                <div class="join_info">
+                    <div class="text">
+                        Some one has entered the Room and the Room capacity is {{data["cur_capacity"]}}
+                    </div>
+                </div>
+                <div class="leave_info">
+                    <div class="text">
+                        Some one has left the Room and the Room capacity is {{data["cur_capacity"]}}
+                    </div>
+                </div> -->
             </section>
             <hr>
             <section class="input">
@@ -47,6 +57,22 @@
 </body>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+
+        function appendMessage(message,sender){
+            const messageDisplay = document.getElementsByClassName("display")[0];
+            var newMessage = document.createElement("div");
+            if(sender==="me"){
+                newMessage.className = "send";
+            }
+            else if(sender === "other"){
+                newMessage.className = "recv";
+            }
+                sender == "me" ? "send" : "recv";
+            newMessage.innerHTML = `<div class="text">${message}</div>`;
+            messageDisplay.appendChild(newMessage);
+        }
+
+
         var socket = io.connect("localhost:6589");
 
         socket.on("connect", function() {
@@ -54,14 +80,10 @@
                 room: "{{ data['room_name'] }}"
             });
         });
-
-        function appendMessage(message,sender){
-            const messageDisplay = document.getElementsByClassName("display")[0];
-                var newMessage = document.createElement("div");
-                newMessage.className = sender == "me" ? "send" : "recv";
-                newMessage.innerHTML = `<div class="text">${message}</div>`;
-                messageDisplay.appendChild(newMessage);
-        }
+        
+        socket.on("message", function(data) {
+            appendMessage(data,"other")
+        });
 
         document.getElementById("submit_button").addEventListener("click", function(event) {
             event.preventDefault();
@@ -77,9 +99,12 @@
             }
         });
 
-        socket.on("message", function(data) {
-            console.log("received message");
-            appendMessage(data,"other")
+        socket.on("joined_room",function(data){
+            console.log("Someone joined room",data["cur_capacity"]);
+        });
+
+        socket.on("lefted_room",function(data){
+            console.log("someone left the room",data["cur_capacity"]);
         });
 
         document.getElementById("leave_room_button").addEventListener("click",function(){
@@ -91,8 +116,7 @@
 
         window.addEventListener("beforeunload", function() {
             socket.emit("leave", {
-                room: roomName,
-                username: "{{ data['username'] }}"
+                room: "{{ data['room_name'] }}"
             });
         });
     });

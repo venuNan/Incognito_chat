@@ -28,7 +28,7 @@ document.getElementById("submit_button").addEventListener("click", (event)=> {
             error_message.style.display = "block";
             error_message.textContent = data['message'];
         } else if (data['status'] === 'success') {
-            window.location.href = `/chat_room?room_name=${data["room_name"]}&max_capacity=${data["max_capacity"]}&cur_capacity=${data["cur_capacity"]}`;
+            window.location.href = `/chat_room?room_name=${data["room_name"]}`;
         }
     })
     .catch(error => {

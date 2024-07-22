@@ -71,7 +71,7 @@ main .main .display{
     min-height: 300px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     overflow-y: auto;
     margin-bottom: 10px;
     
@@ -138,6 +138,19 @@ main .main .display .recv .text{
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
 }
+
+main .main .display .join_info,main .main .display .leave_info{
+    display: flex;
+    justify-content: center;
+}
+
+main .main .display .join_info .text,main .main .display .leave_info .text{
+    background-color: rgba(91, 108, 108, 0.216);
+    font-size: x-small;
+    padding: 4px;
+    border-radius: 10px;
+}
+
 hr{
     height: 2px;
     margin: 1px;

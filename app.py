@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
 from hashlib import sha256
-from flask_socketio import SocketIO,join_room,leave_room,send
+from flask_socketio import SocketIO,join_room,leave_room,send,emit
 from time import sleep
 from dotenv import load_dotenv
 import os
@@ -91,13 +91,7 @@ def login_to_room():
             if user_exists:
                 if user_exists[0][2] > user_exists[0][3]:
                     if user_exists[0][1] == password:
-                        try:
-                            db.session.execute(text("UPDATE user.room_data SET cur_capacity = cur_capacity + 1 WHERE room_name = :room_name"), {'room_name': room_name})
-                            db.session.commit()
-                            return jsonify({"status": "success", "room_name": user_exists[0][0], "max_capacity": user_exists[0][2], "cur_capacity": user_exists[0][3] + 1})
-                        except SQLAlchemyError as e:
-                            db.session.rollback()
-                            return jsonify({'status': 'error', 'message': str(e)}), 500
+                        return jsonify({"status": "success", "room_name": user_exists[0][0]})
                     else:
                         return jsonify({'status': 'error', 'message': 'Incorrect password'})
                 else:
@@ -121,25 +115,30 @@ def chat_room():
 def handle_join(data):
     room = data['room']
     join_room(room)
-    send(f'someone has entered the room.', to=room)
+    cur_capacity = db.session.execute(text("select cur_capacity from user.room_data where room_name= :room_name"),{"room_name":room}).fetchall()
+    # emit("joined_room",{'cur_capacity':cur_capacity},to=room)
+    print(cur_capacity)
+
+    
+@socket.on("message")
+def handle_message(data):
+    room = data['room']
+    message = data['message']
+    send(message, to=room,include_self=False)
+
 
 @socket.on('leave')
 def handle_leave(data):
     room = data['room']
     leave_room(room)
     try:
-        db.session.execute(text("UPDATE user.room_data SET cur_capacity = cur_capacity + 1 WHERE room_name = :room_name"), {'room_name': room})
+        db.session.execute(text("UPDATE user.room_data SET cur_capacity = cur_capacity-1 WHERE room_name = :room_name and cur_capacity>0"), {'room_name': room})
         db.session.commit()
-        send(f'someone has left the room.', to=room)
+        cur_capacity = db.session.execute(text("select cur_capacity from user.room_data where room_name= :room_name"),{"room_name":room}).fetchall()
+        emit("lefted_room",{'cur_capacity':cur_capacity},to=room)
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({'status': 'error', 'message': str(e)}), 500
-    
-@socket.on("message")
-def handle_message(data):
-    room = data['room']
-    message = data['message']
-    send(message, to=room)
 
 if __name__ == "__main__":
     socket.run(app,host="localhost",port=6589)
