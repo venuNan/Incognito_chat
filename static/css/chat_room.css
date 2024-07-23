@@ -139,12 +139,12 @@ main .main .display .recv .text{
     border-bottom-left-radius: 10px;
 }
 
-main .main .display .join_info,main .main .display .leave_info{
+main .main .display .join_info,main .main .display .leave_info,main .main .display .self{
     display: flex;
     justify-content: center;
 }
 
-main .main .display .join_info .text,main .main .display .leave_info .text{
+main .main .display .join_info .text,main .main .display .leave_info .text,main .main .display .self .text{
     background-color: rgba(91, 108, 108, 0.216);
     font-size: x-small;
     padding: 4px;
