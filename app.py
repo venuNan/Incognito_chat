@@ -115,9 +115,16 @@ def chat_room():
 def handle_join(data):
     room = data['room']
     join_room(room)
-    cur_capacity = db.session.execute(text("select cur_capacity from user.room_data where room_name= :room_name"),{"room_name":room}).fetchall()
-    # emit("joined_room",{'cur_capacity':cur_capacity},to=room)
-    print(cur_capacity)
+    try:
+        db.session.execute(text("UPDATE user.room_data SET cur_capacity = cur_capacity+1 WHERE room_name = :room_name and cur_capacity<max_capacity"), {'room_name': room})
+        db.session.commit()
+        cur_capacity = db.session.execute(text("select cur_capacity from user.room_data where room_name= :room_name"),{"room_name":room}).fetchall()
+        emit("joined_room",{'cur_capacity':cur_capacity[0][0]},to=room)
+        print(cur_capacity[0][0])
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    
 
     
 @socket.on("message")
@@ -135,10 +142,10 @@ def handle_leave(data):
         db.session.execute(text("UPDATE user.room_data SET cur_capacity = cur_capacity-1 WHERE room_name = :room_name and cur_capacity>0"), {'room_name': room})
         db.session.commit()
         cur_capacity = db.session.execute(text("select cur_capacity from user.room_data where room_name= :room_name"),{"room_name":room}).fetchall()
-        emit("lefted_room",{'cur_capacity':cur_capacity},to=room)
+        emit("lefted_room",{'cur_capacity':cur_capacity[0][0]},to=room)
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 if __name__ == "__main__":
-    socket.run(app,host="localhost",port=6589)
+    socket.run(app,host="0.0.0.0",port=6589)
