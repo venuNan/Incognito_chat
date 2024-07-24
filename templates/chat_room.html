@@ -44,9 +44,9 @@
                         Some one has left the Room and the Room capacity is {{data["cur_capacity"]}}
                     </div>
                 </div> -->
-                <div class="self">
+                <!-- <div class="self">
                     <div class="text">hello world</div>
-                </div>
+                </div> -->
             </section>
             <hr>
             <section class="input">
@@ -88,22 +88,28 @@
 
         socket.on("connect",function(){
             socket.emit("join_room",{
-                room: "{{ data['room_name'] }}"
+                room: "{{ data['room_name'] }}",
+                "user_id":localStorage.getItem("user_id")
+                
             });
         });
 
+        socket.on("set_user_id",function(data){
+            localStorage.setItem("user_id",data["user_id"]);
+            console.log("user id setted");
+        });
+
         socket.on("self_join",function(data){
-            appendMessage("You joined the Room and the current capacity is","self");
+            appendMessage("You joined the Room and the current capacity is "+data["cur_capacity"],"self");
         });
 
         socket.on("joined_room",function(data){
-            localStorage.setItem(user_id,data["user_id"]);
+            console.log("joined room");
             appendMessage("someone joined the Room and the current capacity is "+data["cur_capacity"],"join");
-            console.log("joined_room");
 
         });
 
-        socket.on("message", function(data) {
+        socket.on("message", function(data){
             appendMessage(data,"other")
         });
 
@@ -113,10 +119,9 @@
             console.log("lefted_room");
         });
 
-        socket.on("error",function(){
-            window.href = "/error";
+        socket.on("error",function(data){
+            window.href = `/error?message=${data["message"]}`;
         });
-
 
         document.getElementById("submit_button").addEventListener("click", function(event) {
             event.preventDefault();
@@ -132,7 +137,7 @@
         });
 
         document.getElementById("leave_room_button").addEventListener("click",function(){
-            socket.emit("leave", {
+            socket.emit("disconnect", {
                 room: "{{ data['room_name'] }}",
                 user_id:localStorage.getItem("user_id")
             });
