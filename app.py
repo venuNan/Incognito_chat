@@ -2,11 +2,14 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 from hashlib import sha256
 from flask_socketio import SocketIO, join_room, leave_room, emit
 from dotenv import load_dotenv
 import os
 import uuid
+from datetime import datetime
+
 
 app = Flask(__name__)
 load_dotenv()
@@ -24,6 +27,12 @@ class RoomData(db.Model):
     max_capacity = db.Column(db.Integer, nullable=False)
     cur_capacity = db.Column(db.Integer, nullable=False)
 
+def log_error(error_message, function):
+    with open("error_log.txt", "a") as f:
+        now = datetime.now()
+        current_time = now.strftime("%Y-%m-%d %H:%M")
+        f.write(f"{current_time}--{function}    {error_message}\n")
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -32,22 +41,31 @@ def home():
 def create_room():
     if request.method == "POST":
         data = request.json
+
+        # checking if data is provided
         if not data:
             return jsonify({'status': 'error', 'message': 'No data provided'}), 400
+        # extractign the variable from the request the server received
 
         room_name = data.get('room_name')
-        password = sha256(data.get('password').encode()).hexdigest()
+        password = data.get('password')
+
         capacity = data.get('capacity')
 
+        #  checking all the variables is provided or not
         if not room_name or not password or not capacity:
             return jsonify({'status': 'error', 'message': 'Missing required fields'}), 400
 
+
         try:
+            # checking that the user is already exists in the database oe not
+            # Hash the password
+            hashed_password = sha256(password.encode()).hexdigest()
             exist_room = db.session.execute(text("SELECT * FROM user.room_data WHERE room_name= :room_name"), {'room_name': room_name}).fetchall()
             if exist_room:
                 return jsonify({'status': 'room_exist'})
 
-            room = RoomData(room_name=room_name, password=password, max_capacity=capacity, cur_capacity=1)
+            room = RoomData(room_name=room_name, password=hashed_password, max_capacity=capacity, cur_capacity=0)
             db.session.add(room)
             db.session.commit()
 
@@ -55,9 +73,11 @@ def create_room():
         
         except SQLAlchemyError as e:
             db.session.rollback()
+            log_error(str(e),"create_room")
             return jsonify({'status': 'error', 'message': str(e)}), 500
         
         except Exception as e:
+            log_error(str(e),"createe_room")
             return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
         
     else:
@@ -89,6 +109,7 @@ def login_to_room():
             else:
                 return jsonify({'status': 'error', 'message': 'Room does not exist'})
         except Exception as e:
+            log_error(str(e),"login_room")
             return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
     else:
         return render_template("login_to_room.html")
@@ -107,63 +128,77 @@ def error_page():
 def handle_connect():
     room = request.args.get("room")
     user_id = request.args.get("user_id")
+    ssid = request.sid    
+    
     if user_id is None or user_id == "null":
         user_id = str(uuid.uuid4())
     
     if room not in room_users:
         room_users[room] = []
+
     if user_id not in room_users[room]:
         room_users[room].append(user_id)
+        users[ssid] = {"room": room, "user_id": user_id}
+        
         try:
-            db.session.execute(
-                text("UPDATE user.room_data SET cur_capacity = cur_capacity + 1 WHERE room_name = :room_name"),
-                {'room_name': room}
-            )
-            db.session.commit()
+            with Session(db.engine) as session, session.begin():
+                result = session.execute(
+                    text("SELECT cur_capacity, max_capacity FROM user.room_data WHERE room_name = :room_name"),
+                    {"room_name": room}
+                ).fetchone()
 
-            result = db.session.execute(
-            text("SELECT cur_capacity, max_capacity FROM user.room_data WHERE room_name = :room_name"),
-            {"room_name": room}
-            ).fetchone()
-
-            cur_capacity, max_capacity = result
-            print("cur_capacity",cur_capacity,"max_capacity",max_capacity)
-            if cur_capacity >= max_capacity:
-                db.session.execute(
-                text("UPDATE user.room_data SET cur_capacity = cur_capacity - 1 WHERE room_name = :room_name"),
-                {'room_name': room}
+                if result.cur_capacity >= result.max_capacity:
+                    raise Exception("Room is full")
+                    
+                
+                session.execute(
+                    text("UPDATE user.room_data SET cur_capacity = cur_capacity + 1 WHERE room_name = :room_name"),
+                    {"room_name": room}
                 )
-                db.session.commit()
-                emit("error", {'message': 'Room is full'}, to=request.sid)
-                return
+                
+                curcapacity = session.execute(
+                    text("SELECT cur_capacity, max_capacity FROM user.room_data WHERE room_name = :room_name"),
+                    {"room_name": room}
+                ).fetchone()[0]
+                
             join_room(room)
 
             emit("set_user_id",{"user_id":user_id},to=request.sid)
-            emit("joined_room", {'cur_capacity': cur_capacity},include_self=False, to=room)
+            emit("joined_room", {'cur_capacity': curcapacity},include_self=False, to=room)
         except SQLAlchemyError as e:
             db.session.rollback()
-            emit("error", {'message': str(e)}, to=request.sid)
+            log_error(str(e),"connect1")
+            emit("error", {'message': str(e)}, to=ssid), 500
+        except Exception as e:
+            log_error(e,"connect2")
+            return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
     else:
-        emit("error", {'message': 'User already in room'}, to=request.sid)
-        
+        print("error message user already in room")
+        emit("error", {'message': 'User already in room'}, to=ssid)
 @socket.on('join_room')
 def handle_join(data):
-    room = data["room"]
-    user_id = data["user_id"]
     ssid = request.sid
-    print(ssid)
-    users[ssid] = {"room": room, "user_id": user_id}
-    join_room(room)
-    try:
-        cur_capacity = db.session.execute(
-            text("SELECT cur_capacity FROM user.room_data WHERE room_name = :room_name"),
-            {"room_name": room}
-        ).fetchall()
-        print("cur_capacity", cur_capacity[0][0])
-        emit("self_join", {'cur_capacity': cur_capacity[0][0]}, to=ssid)
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        emit("error", {'message': str(e)}, to=ssid)
+    if ssid in users:
+        print("ssid in join room function",ssid)
+        room = data["room"]
+        join_room(room)
+        try:
+            cur_capacity = db.session.execute(
+                text("SELECT cur_capacity FROM user.room_data WHERE room_name = :room_name"),
+                {"room_name": room}
+            ).fetchall()
+            emit("self_join", {'cur_capacity': cur_capacity[0][0]}, to=ssid)
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            log_error(str(e),"join_room")
+            emit("error", {'message': str(e)}, to=ssid)
+        
+        except Exception as e:
+            log_error(str(e),"join_room")
+            return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
+        
+    else:
+        emit("error", {'message': 'User already in room'}, to=ssid)
 
 @socket.on("message")
 def handle_message(data):
@@ -175,7 +210,7 @@ def handle_message(data):
 @socket.on('disconnect')
 def handle_disconnect():
     ssid = request.sid
-    print(ssid)
+    print("ssid in disconnect  ------",ssid)
     if ssid in users:
         room = users[ssid]["room"]
         user_id = users[ssid]["user_id"]
@@ -189,24 +224,36 @@ def handle_disconnect():
         if not room_users[room]:
             del room_users[room]
         try:
-            db.session.execute(
-                text("UPDATE user.room_data SET cur_capacity = cur_capacity - 1 WHERE room_name = :room_name AND cur_capacity > 0"),
-                {'room_name': room}
-            )
-            db.session.commit()
-            cur_capacity = db.session.execute(
-                text("SELECT cur_capacity FROM user.room_data WHERE room_name = :room_name"),
-                {"room_name": room}
-            ).fetchall()
-            emit("lefted_room", {'cur_capacity': cur_capacity[0][0]}, to=room)
+            with Session(db.engine) as session, session.begin():
+                current_room = session.execute(
+                    text("SELECT cur_capacity FROM user.room_data WHERE room_name = :room_name FOR UPDATE"),
+                    {"room_name": room}
+                ).fetchone()
+
+                if current_room and current_room.cur_capacity > 0:
+                    session.execute(
+                        text("UPDATE user.room_data SET cur_capacity = cur_capacity - 1 WHERE room_name = :room_name"),
+                        {"room_name": room}
+                    )
+                    updated_room = session.execute(
+                        text("SELECT cur_capacity FROM user.room_data WHERE room_name = :room_name"),
+                        {"room_name": room}
+                    ).fetchone()
+                    leave_room(room)
+                    emit("lefted_room", {'cur_capacity': updated_room.cur_capacity}, to=room)
         except SQLAlchemyError as e:
             db.session.rollback()
+            log_error(str(e),"disconnect")
             emit("error", {'message': str(e)}, to=room)
+        except Exception as e:
+            log_error(str(e),"disconnect")
+            return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
         leave_room(room)
         print(room_users)
         print(users)
 
 if __name__ == "__main__":
-    socket.run(app, host="0.0.0.0", port=5000)
     with app.app_context():
         db.create_all()
+    socket.run(app, host="0.0.0.0", port=8965)
+    

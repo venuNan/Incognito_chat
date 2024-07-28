@@ -84,15 +84,17 @@
 
         var user_id = localStorage.getItem('user_id') || null;
         var para = `user_id=${user_id}&room=${"{{data['room_name']}}"}`;
-        var socket = io.connect("http://192.168.0.132:5000",{query:para});
+        var socket = io.connect("http://192.168.0.132:8965",{query:para});
 
         socket.on("connect",function(){
             socket.emit("join_room",{
                 room: "{{ data['room_name'] }}",
-                "user_id":localStorage.getItem("user_id")
-                
             });
         });
+
+        socket.on("disconnect",function(){
+            localStorage.removeItem("user_id");
+        })
 
         socket.on("set_user_id",function(data){
             localStorage.setItem("user_id",data["user_id"]);
@@ -119,8 +121,13 @@
             console.log("lefted_room");
         });
 
-        socket.on("error",function(data){
-            window.href = `/error?message=${data["message"]}`;
+        socket.on("error", function(data) {
+            try {
+                const errorMessage = encodeURIComponent(data["message"]);
+                window.location.href = `/error?message=${errorMessage}`;
+            } catch (e) {
+                console.error("Error handling socket error event:", e);
+            }
         });
 
         document.getElementById("submit_button").addEventListener("click", function(event) {
