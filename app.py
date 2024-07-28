@@ -196,7 +196,6 @@ def handle_join(data):
         except Exception as e:
             log_error(str(e),"join_room")
             return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
-        
     else:
         emit("error", {'message': 'User already in room'}, to=ssid)
 
