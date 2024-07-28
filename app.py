@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
+from flask_migrate import Migrate
 from sqlalchemy.orm import Session
 from hashlib import sha256
 from flask_socketio import SocketIO, join_room, leave_room, emit
@@ -20,8 +21,10 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 socket = SocketIO(app, cors_allowed_origins="*")
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 class RoomData(db.Model):
+    __tablename__ = "room_data"
     room_name = db.Column(db.String(100), primary_key=True)
     password = db.Column(db.String(100), nullable=False)
     max_capacity = db.Column(db.Integer, nullable=False)
@@ -181,7 +184,6 @@ def handle_join(data):
     if ssid in users:
         print("ssid in join room function",ssid)
         room = data["room"]
-        join_room(room)
         try:
             cur_capacity = db.session.execute(
                 text("SELECT cur_capacity FROM user.room_data WHERE room_name = :room_name"),
@@ -209,13 +211,9 @@ def handle_message(data):
 @socket.on('disconnect')
 def handle_disconnect():
     ssid = request.sid
-    print("ssid in disconnect  ------",ssid)
     if ssid in users:
         room = users[ssid]["room"]
         user_id = users[ssid]["user_id"]
-        print("disconnect", ssid)
-        print(room_users)
-        print(users)
 
         del users[ssid]
         if user_id in room_users[room]:
@@ -248,8 +246,7 @@ def handle_disconnect():
             log_error(str(e),"disconnect")
             return jsonify({'status': 'error', 'message': 'Internal Server Error'}), 500
         leave_room(room)
-        print(room_users)
-        print(users)
+       
 
 if __name__ == "__main__":
     with app.app_context():
