@@ -182,7 +182,7 @@ def handle_connect():
 def handle_join(data):
     ssid = request.sid
     if ssid in users:
-        print("ssid in join room function",ssid)
+        
         room = data["room"]
         try:
             cur_capacity = db.session.execute(
