@@ -1,2 +1,16 @@
 Time                         Error
   
+2024-08-06 11:18--create_room    (MySQLdb.OperationalError) (2002, "Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-08-07 18:02--create_room    (MySQLdb.OperationalError) (1142, "SELECT command denied to user 'venu'@'localhost' for table 'room_data'")
+[SQL: SELECT * FROM user.room_data WHERE room_name= %s]
+[parameters: ('venu123',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-08-07 18:06--create_room    (MySQLdb.OperationalError) (1142, "SELECT command denied to user 'venu'@'localhost' for table 'room_data'")
+[SQL: SELECT * FROM user.room_data WHERE room_name= %s]
+[parameters: ('venu123',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-08-07 18:09--create_room    (MySQLdb.OperationalError) (1049, "Unknown database 'user'")
+[SQL: SELECT * FROM user.room_data WHERE room_name= %s]
+[parameters: ('venu123',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)

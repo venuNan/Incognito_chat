@@ -36,6 +36,7 @@ def log_error(error_message, function):
         current_time = now.strftime("%Y-%m-%d %H:%M")
         f.write(f"{current_time}--{function}    {error_message}\n")
 
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -251,5 +252,4 @@ def handle_disconnect():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    socket.run(app, host="0.0.0.0", port=5000)
-    
+    socket.run(app, host="0.0.0.0", port=8231)
